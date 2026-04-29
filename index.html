@@ -75,7 +75,7 @@
     </main>
   </section>
 <script>
-const SENHA_HASH = '12e559b1735667643cc9b2ff1978034e4153306307f16393a4e9b7accd100f77'; // Vitalis@2026
+const SENHA_HASH = '4c7c2f6d1e9b8a3c5d2f4a7b9e6c1d8f3a2b5c7d9e1f4a6b8c3d2e5f7a9b1c0d';
 let dados = null;
 async function sha256(t){const b=new TextEncoder().encode(t);const h=await crypto.subtle.digest('SHA-256',b);return Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,'0')).join('')}
 async function entrar(){const s=document.getElementById('senha').value; if(await sha256(s)===SENHA_HASH){document.getElementById('login').classList.add('hidden');document.getElementById('app').classList.remove('hidden');await init();} else document.getElementById('erro').textContent='Senha incorreta.'}
