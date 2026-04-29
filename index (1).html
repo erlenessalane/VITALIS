@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vitalis — Dashboard Financeiro</title>
+  <style>
+    :root {
+      --red:#ef1f1f; --red-dark:#b80f12; --orange:#ff4b2b; --black:#292728;
+      --gray:#667085; --light:#f6f7f9; --card:#ffffff; --green:#09934f;
+      --amber:#f59e0b; --border:#e8e8eb; --shadow:0 18px 50px rgba(20,20,30,.08);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:#f6f7f9;color:var(--black)}
+    .hidden{display:none!important}
+    .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at 10% 20%,rgba(239,31,31,.14),transparent 28%),radial-gradient(circle at 90% 80%,rgba(255,75,43,.10),transparent 25%),#f7f7f8}
+    .login-card{width:min(480px,100%);background:white;border:1px solid var(--border);border-radius:28px;padding:38px;box-shadow:var(--shadow)}
+    .logo{width:250px;max-width:100%;display:block;margin:0 auto 20px}
+    h1{font-size:26px;margin:0 0 8px;text-align:center}
+    .sub{text-align:center;color:var(--gray);font-size:15px;margin-bottom:28px}
+    label{font-size:13px;color:#344054;font-weight:800}
+    input,select,textarea{width:100%;border:1px solid var(--border);background:#fff;border-radius:14px;padding:13px 14px;font-size:15px;outline:none}
+    input:focus,textarea:focus{border-color:var(--red)}
+    .btn{border:0;border-radius:14px;padding:14px 16px;font-weight:900;cursor:pointer;background:linear-gradient(135deg,var(--red),var(--red-dark));color:white;box-shadow:0 10px 24px rgba(239,31,31,.25)}
+    .btn.secondary{background:#fff;color:var(--black);border:1px solid var(--border);box-shadow:none}
+    .btn.small{padding:9px 12px;font-size:12px}
+    .err{color:var(--red);font-size:13px;text-align:center;margin-top:12px;min-height:18px}
+    .hint{font-size:12px;color:var(--gray);text-align:center;margin-top:18px;line-height:1.55}
+    .app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+    aside{background:rgba(255,255,255,.9);backdrop-filter:blur(14px);border-right:1px solid var(--border);padding:22px 18px;position:sticky;top:0;height:100vh}
+    aside .logo{margin:0 0 26px;width:230px}
+    .nav{display:grid;gap:8px}
+    .nav a{padding:13px 14px;border-radius:12px;text-decoration:none;color:#3b3b42;font-weight:800;display:flex;gap:10px;align-items:center}
+    .nav a.active,.nav a:hover{background:linear-gradient(135deg,var(--red),var(--red-dark));color:white}
+    main{padding:22px 26px 40px}
+    .topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;background:white;border:1px solid var(--border);border-radius:18px;padding:18px 22px;box-shadow:var(--shadow);margin-bottom:18px}
+    .title h2{margin:0;font-size:22px} .title p{margin:5px 0 0;color:var(--gray)} .datebox{display:flex;align-items:center;gap:10px;background:#f4f5f6;padding:10px 14px;border-radius:12px;font-size:14px}
+    .grid{display:grid;gap:16px} .cards{grid-template-columns:repeat(4,minmax(180px,1fr))} .sales{grid-template-columns:1fr 1fr 1.2fr} .lower{grid-template-columns:1.1fr 1fr 1fr} .bottom{grid-template-columns:1fr 1fr 1fr}
+    .card{background:white;border:1px solid var(--border);border-radius:18px;padding:18px;box-shadow:var(--shadow);overflow:hidden} .kpi{display:flex;gap:14px;align-items:flex-start} .icon{height:52px;width:52px;border-radius:16px;background:linear-gradient(135deg,rgba(239,31,31,.14),rgba(255,75,43,.08));display:flex;align-items:center;justify-content:center;font-size:25px;color:var(--red)} .label{font-size:13px;color:#333;font-weight:900;margin-bottom:8px} .value{font-size:25px;font-weight:900;letter-spacing:-.5px} .value.green{color:var(--green)} .value.red{color:var(--red)} .mini{font-size:12px;color:var(--gray);margin-top:6px} .link{color:var(--red);font-size:12px;font-weight:900;margin-top:9px}
+    canvas{width:100%;height:170px} .spark{height:58px;margin-top:16px} table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left} th{color:#4b5563;background:#fafafa} td.num{text-align:right;font-weight:900} .total-row{background:#fff1f1;font-weight:900} .status-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px} .green-dot{background:var(--green)} .red-dot{background:var(--red)} .amber-dot{background:var(--amber)}
+    .admin{margin-top:18px} .admin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px} textarea{height:140px;font-family:Consolas,monospace} .footer{color:#9ca3af;text-align:center;font-size:12px;margin-top:20px}
+    @media(max-width:1100px){.app{grid-template-columns:1fr} aside{position:relative;height:auto} .cards,.sales,.lower,.bottom{grid-template-columns:1fr 1fr}}
+    @media(max-width:700px){main{padding:14px} .cards,.sales,.lower,.bottom,.admin-grid{grid-template-columns:1fr} .topbar{display:block} .datebox{margin-top:12px}}
+  </style>
+</head>
+<body>
+  <section id="login" class="login">
+    <div class="login-card">
+      <img class="logo" src="vitalis-logo.png" alt="Vitalis Clínica Médica" />
+      <h1>Painel Financeiro Privado</h1>
+      <p class="sub">Acesso reservado à Direcção da Vitalis.</p>
+      <label>Senha de acesso</label>
+      <input id="senha" type="password" placeholder="Digite a senha" autocomplete="current-password" />
+      <button class="btn" style="width:100%;margin-top:14px" onclick="entrar()">Entrar</button>
+      <div id="erro" class="err"></div>
+      <div class="hint">Senha inicial: <b>vitalis2026</b><br>Após subir no GitHub, use CTRL+F5 ou aba anónima.</div>
+    </div>
+  </section>
+
+  <section id="app" class="app hidden">
+    <aside>
+      <img class="logo" src="vitalis-logo.png" alt="Vitalis Clínica Médica" />
+      <nav class="nav">
+        <a href="#dashboard" class="active">📊 Dashboard</a>
+        <a href="#saldos">⚖️ Saldos</a>
+        <a href="#despesas">📉 Despesas</a>
+        <a href="#devedores">👥 Devedores</a>
+        <a href="#vendas">🛒 Vendas</a>
+        <a href="#admin">⚙️ Actualizar Dados</a>
+      </nav>
+      <button class="btn secondary" style="width:100%;margin-top:18px" onclick="sair()">Sair</button>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div class="title"><h2>Boa tarde, Diretor!</h2><p>Situação financeira consolidada da Vitalis.</p></div>
+        <div class="datebox">📅 <div><b>Data do relatório</b><br><span id="dataRelatorio">--</span></div></div>
+      </div>
+
+      <div id="dashboard" class="grid cards">
+        <div class="card kpi"><div class="icon">⚖️</div><div><div class="label">Saldos (Contas a Lançar)</div><div id="kpiSaldos" class="value">--</div><div class="mini" id="kpiSaldosMini"></div><div class="link">Ver detalhes →</div></div></div>
+        <div class="card kpi"><div class="icon">⬇️</div><div><div class="label">Despesas</div><div id="kpiDespesas" class="value">--</div><div class="mini">Mês actual</div><div class="link">Ver detalhes →</div></div></div>
+        <div class="card kpi"><div class="icon">👤</div><div><div class="label">Devedores</div><div id="kpiDevedores" class="value">--</div><div class="mini" id="kpiDevedoresMini"></div><div class="link">Ver detalhes →</div></div></div>
+        <div class="card kpi"><div class="icon">📈</div><div><div class="label">Superavit / Deficit</div><div id="kpiResultado" class="value">--</div><div class="mini">Receitas - despesas</div><div class="link">Ver detalhes →</div></div></div>
+      </div>
+
+      <div id="vendas" class="grid sales" style="margin-top:16px">
+        <div class="card"><div class="label">Vendas do Dia</div><div id="vendasDia" class="value">--</div><canvas id="spark1" class="spark"></canvas></div>
+        <div class="card"><div class="label">Vendas do Dia Anterior</div><div id="vendasDiaAnterior" class="value">--</div><canvas id="spark2" class="spark"></canvas></div>
+        <div class="card"><div class="label">Vendas Totais até à Data</div><div id="vendasTotais" class="value">--</div><canvas id="spark3" class="spark"></canvas></div>
+      </div>
+
+      <div class="grid lower" style="margin-top:16px">
+        <div class="card"><div class="label">Resumo Financeiro</div><canvas id="barChart"></canvas><div class="grid cards" style="grid-template-columns:repeat(3,1fr);margin-top:10px"><div class="card" style="box-shadow:none;background:#fafafa"><div class="mini">Receitas Totais</div><b id="receitasTotais" class="green"></b></div><div class="card" style="box-shadow:none;background:#fafafa"><div class="mini">Despesas Totais</div><b id="despesasTotais" class="red"></b></div><div class="card" style="box-shadow:none;background:#fafafa"><div class="mini">Resultado</div><b id="resultadoMini"></b></div></div></div>
+        <div id="saldos" class="card"><div class="label">Saldos por Conta</div><table><thead><tr><th>Conta</th><th class="num">Saldo</th></tr></thead><tbody id="tbSaldos"></tbody></table></div>
+        <div id="devedores" class="card"><div class="label">Devedores por Faixa de Atraso</div><canvas id="donutDev"></canvas><div id="legendDev"></div></div>
+      </div>
+
+      <div class="grid bottom" style="margin-top:16px">
+        <div class="card"><div class="label">Top Devedores</div><table><thead><tr><th>Cliente</th><th class="num">Valor</th><th class="num">Dias</th></tr></thead><tbody id="tbDevedores"></tbody></table></div>
+        <div id="despesas" class="card"><div class="label">Despesas por Categoria</div><canvas id="donutDesp"></canvas><div id="legendDesp"></div></div>
+        <div class="card"><div class="label">Indicadores Financeiros</div><table><tbody><tr><td>Margem de Lucro</td><td class="num" id="margem"></td></tr><tr><td>Índice de Liquidez</td><td class="num" id="liquidez"></td></tr><tr><td>Giro de Contas a Receber</td><td class="num">38 dias</td></tr><tr><td>Giro de Estoque</td><td class="num">22 dias</td></tr></tbody></table></div>
+      </div>
+
+      <div id="admin" class="card admin">
+        <div class="label">Actualizar dados do dashboard</div>
+        <p class="mini">Cole aqui o JSON actualizado e clique em guardar. Para actualizar para todos, substitua o ficheiro <b>dados-financeiros.json</b> no GitHub.</p>
+        <textarea id="jsonBox"></textarea>
+        <div class="admin-grid">
+          <button class="btn small" onclick="guardarJson()">Guardar neste navegador</button>
+          <button class="btn small secondary" onclick="exportarJson()">Exportar JSON</button>
+          <button class="btn small secondary" onclick="carregarExemplo()">Recarregar do GitHub</button>
+          <button class="btn small secondary" onclick="baixarHtml()">Baixar HTML</button>
+        </div>
+      </div>
+      <div class="footer">© 2026 Vitalis Clínica Médica · Dados actualizados em: <span id="atualizadoEm">--</span></div>
+    </main>
+  </section>
+
+<script>
+const SENHA_HASH = 'ca8d664991572969ae7186a0d9effc442efdf80edca31368757cefe3bfc70dc1'; // senha: vitalis2026
+let dados = null;
+
+async function sha256(texto) {
+  const bytes = new TextEncoder().encode(texto);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+async function entrar() {
+  const senhaDigitada = document.getElementById('senha').value.trim();
+  const hashDigitado = await sha256(senhaDigitada);
+  if (hashDigitado === SENHA_HASH) {
+    document.getElementById('login').classList.add('hidden');
+    document.getElementById('app').classList.remove('hidden');
+    await init();
+  } else {
+    document.getElementById('erro').textContent = 'Senha incorreta.';
+  }
+}
+
+function sair() { location.reload(); }
+function fmt(v) { return Number(v||0).toLocaleString('pt-MZ',{minimumFractionDigits:2,maximumFractionDigits:2})+' MT'; }
+function sum(arr,k='valor') { return (arr||[]).reduce((a,b)=>a+Number(b[k]||0),0); }
+
+async function init() {
+  const local = localStorage.getItem('vitalisDados');
+  if (local) {
+    dados = JSON.parse(local);
+  } else {
+    try {
+      const res = await fetch('dados-financeiros.json?d=' + Date.now());
+      dados = await res.json();
+    } catch(e) {
+      dados = {"dataRelatorio": "2026-04-29", "atualizadoEm": "2026-04-29 10:00", "moeda": "MT", "saldos": [{"conta": "Caixa", "saldo": 245780}, {"conta": "BCI", "saldo": 1286340}, {"conta": "Millennium BIM", "saldo": 275000}, {"conta": "Moza Banco", "saldo": 0}, {"conta": "Fornecedores a Pagar", "saldo": -845120}, {"conta": "Salários a Pagar", "saldo": -125600}, {"conta": "Impostos a Pagar", "saldo": -235450}, {"conta": "Outras Contas a Lançar", "saldo": 1855900}], "despesas": [{"categoria": "Pessoal", "valor": 622500}, {"categoria": "Medicamentos", "valor": 283900}, {"categoria": "Materiais", "valor": 145000}, {"categoria": "Serviços Médicos", "valor": 118160}, {"categoria": "Outras", "valor": 115000}], "devedores": [{"cliente": "Seguro Saúde, SA", "valor": 980450, "diasAtraso": 45}, {"cliente": "Mediplan", "valor": 745300, "diasAtraso": 32}, {"cliente": "Fidelidade Seguros", "valor": 620000, "diasAtraso": 68}, {"cliente": "Sanlam Saúde", "valor": 510750, "diasAtraso": 28}, {"cliente": "Outros Clientes", "valor": 826400, "diasAtraso": 15}], "vendasDia": 145780, "vendasDiaAnterior": 129550, "vendasTotaisAteData": 4862340};
+    }
+  }
+  render();
+}
+
+function render() {
+  document.getElementById('dataRelatorio').textContent = dados.dataRelatorio || '--';
+  document.getElementById('atualizadoEm').textContent = dados.atualizadoEm || '--';
+  const totalSaldos = sum(dados.saldos,'saldo');
+  const totalDespesas = sum(dados.despesas,'valor');
+  const totalDevedores = sum(dados.devedores,'valor');
+  const vendasTotais = Number(dados.vendasTotaisAteData || 0);
+  const resultado = vendasTotais - totalDespesas;
+
+  document.getElementById('kpiSaldos').textContent = fmt(totalSaldos);
+  document.getElementById('kpiSaldosMini').textContent = 'Total de ' + (dados.saldos||[]).length + ' contas';
+  document.getElementById('kpiDespesas').textContent = fmt(totalDespesas);
+  document.getElementById('kpiDevedores').textContent = fmt(totalDevedores);
+  document.getElementById('kpiDevedoresMini').textContent = 'Total de ' + (dados.devedores||[]).length + ' clientes';
+  document.getElementById('kpiResultado').textContent = fmt(resultado);
+  document.getElementById('kpiResultado').className = 'value ' + (resultado>=0?'green':'red');
+  document.getElementById('vendasDia').textContent = fmt(dados.vendasDia);
+  document.getElementById('vendasDiaAnterior').textContent = fmt(dados.vendasDiaAnterior);
+  document.getElementById('vendasTotais').textContent = fmt(vendasTotais);
+  document.getElementById('receitasTotais').textContent = fmt(vendasTotais);
+  document.getElementById('despesasTotais').textContent = fmt(totalDespesas);
+  document.getElementById('resultadoMini').textContent = fmt(resultado);
+  document.getElementById('resultadoMini').style.color = resultado>=0?'var(--green)':'var(--red)';
+  document.getElementById('margem').textContent = vendasTotais ? ((resultado/vendasTotais)*100).toFixed(1)+'%' : '0%';
+  document.getElementById('margem').style.color = resultado>=0?'var(--green)':'var(--red)';
+  document.getElementById('liquidez').textContent = totalDespesas ? (totalSaldos/totalDespesas).toFixed(2) : '0.00';
+
+  document.getElementById('tbSaldos').innerHTML = (dados.saldos||[]).map(x=>`<tr><td>${x.conta}</td><td class="num" style="color:${x.saldo<0?'var(--red)':'inherit'}">${fmt(x.saldo)}</td></tr>`).join('') + `<tr class="total-row"><td>Total Geral</td><td class="num">${fmt(totalSaldos)}</td></tr>`;
+  document.getElementById('tbDevedores').innerHTML = (dados.devedores||[]).sort((a,b)=>b.valor-a.valor).map(x=>`<tr><td>${x.cliente}</td><td class="num">${fmt(x.valor)}</td><td class="num" style="color:${x.diasAtraso>60?'var(--red)':x.diasAtraso>30?'var(--amber)':'var(--green)'}">${x.diasAtraso}</td></tr>`).join('') + `<tr class="total-row"><td>Total</td><td class="num">${fmt(totalDevedores)}</td><td></td></tr>`;
+  document.getElementById('jsonBox').value = JSON.stringify(dados,null,2);
+
+  spark('spark1',[20,24,30,35,44,40,55,48,60,70,66,82,78,90,88], '#ef1f1f');
+  spark('spark2',[12,22,18,30,25,31,22,42,35,46,38,55,44,48,35], '#ef1f1f');
+  spark('spark3',[50,58,54,60,66,58,74,67,72,69,80,90,82,88,100], '#ef1f1f');
+  barChart('barChart', vendasTotais, totalDespesas, resultado);
+  donut('donutDesp', (dados.despesas||[]).map(x=>x.valor), ['#ef1f1f','#ff8a00','#f4c400','#35aa6f','#4b5563']);
+  legend('legendDesp', (dados.despesas||[]).map(x=>[x.categoria,x.valor]), ['red-dot','amber-dot','amber-dot','green-dot','red-dot']);
+  const devFaixas = [
+    ['Em dia', sum((dados.devedores||[]).filter(x=>x.diasAtraso<=15),'valor')],
+    ['1 - 30 dias', sum((dados.devedores||[]).filter(x=>x.diasAtraso>15 && x.diasAtraso<=30),'valor')],
+    ['31 - 60 dias', sum((dados.devedores||[]).filter(x=>x.diasAtraso>30 && x.diasAtraso<=60),'valor')],
+    ['+ 60 dias', sum((dados.devedores||[]).filter(x=>x.diasAtraso>60),'valor')]
+  ];
+  donut('donutDev', devFaixas.map(x=>x[1]), ['#35aa6f','#f4c400','#ff8a00','#ef1f1f']);
+  legend('legendDev', devFaixas, ['green-dot','amber-dot','amber-dot','red-dot']);
+}
+
+function spark(id, vals, color) {
+  const c=document.getElementById(id),ctx=c.getContext('2d'),w=c.width=c.offsetWidth*2,h=c.height=c.offsetHeight*2;
+  ctx.clearRect(0,0,w,h); ctx.lineWidth=4; ctx.strokeStyle=color; ctx.beginPath();
+  const max=Math.max(...vals), min=Math.min(...vals);
+  vals.forEach((v,i)=>{const x=i*(w/(vals.length-1)); const y=h-8-((v-min)/(max-min||1))*(h-18); if(i===0)ctx.moveTo(x,y); else ctx.lineTo(x,y);});
+  ctx.stroke();
+}
+
+function barChart(id, rec, desp, res) {
+  const c=document.getElementById(id),ctx=c.getContext('2d'),w=c.width=c.offsetWidth*2,h=c.height=c.offsetHeight*2;
+  ctx.clearRect(0,0,w,h); const vals=[rec,desp,Math.max(res,0)], colors=['#35aa6f','#ef1f1f','#292728']; const max=Math.max(...vals,1);
+  vals.forEach((v,i)=>{const bw=w/7, x=w*.18+i*w*.26, bh=(v/max)*(h*.65); ctx.fillStyle=colors[i]; ctx.fillRect(x,h-30-bh,bw,bh);});
+  ctx.fillStyle='#667085'; ctx.font='22px Arial'; ctx.fillText('Receitas',w*.15,h-5); ctx.fillText('Despesas',w*.41,h-5); ctx.fillText('Resultado',w*.67,h-5);
+}
+
+function donut(id, vals, colors) {
+  const c=document.getElementById(id),ctx=c.getContext('2d'),w=c.width=c.offsetWidth*2,h=c.height=c.offsetHeight*2;
+  const total=vals.reduce((a,b)=>a+b,0)||1, cx=w/2, cy=h/2, r=Math.min(w,h)*.36; let start=-Math.PI/2;
+  ctx.clearRect(0,0,w,h);
+  vals.forEach((v,i)=>{ const end=start+(v/total)*Math.PI*2; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.fillStyle=colors[i%colors.length]; ctx.arc(cx,cy,r,start,end); ctx.fill(); start=end; });
+  ctx.globalCompositeOperation='destination-out'; ctx.beginPath(); ctx.arc(cx,cy,r*.58,0,Math.PI*2); ctx.fill(); ctx.globalCompositeOperation='source-over';
+  ctx.fillStyle='#111'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText(fmt(total).replace(',00 MT',''),cx,cy+5);
+}
+
+function legend(id, items, classes) {
+  const total=items.reduce((a,b)=>a+b[1],0)||1;
+  document.getElementById(id).innerHTML = items.map((x,i)=>`<div class="mini"><span class="status-dot ${classes[i]}"></span><b>${x[0]}</b> — ${fmt(x[1])} (${(x[1]/total*100).toFixed(1)}%)</div>`).join('');
+}
+
+function guardarJson() {
+  try { dados=JSON.parse(document.getElementById('jsonBox').value); localStorage.setItem('vitalisDados',JSON.stringify(dados)); render(); alert('Dados guardados neste navegador.'); }
+  catch(e) { alert('JSON inválido. Verifique a estrutura.'); }
+}
+function exportarJson() { download('dados-financeiros.json',JSON.stringify(dados,null,2),'application/json'); }
+function carregarExemplo() { localStorage.removeItem('vitalisDados'); location.reload(); }
+function baixarHtml() { download('index.html',document.documentElement.outerHTML,'text/html'); }
+function download(nome,conteudo,tipo) { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([conteudo],{type:tipo})); a.download=nome; a.click(); }
+document.getElementById('senha').addEventListener('keydown',e=>{ if(e.key==='Enter') entrar(); });
+</script>
+</body>
+</html>
